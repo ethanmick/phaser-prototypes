@@ -1,7 +1,10 @@
 import { Scene } from 'phaser'
-
-type Mark = 'X' | 'O'
-type CellMark = Mark | ''
+import {
+  type CellMark,
+  chooseAIMove,
+  getGameResult,
+  type Mark,
+} from '../logic/ticTacToe'
 
 export class Game extends Scene {
   private board: CellMark[] = Array(9).fill('')
@@ -144,7 +147,7 @@ export class Game extends Scene {
 
     this.placeMark(index, this.playerMark)
 
-    const result = this.getGameResult(this.board)
+    const result = getGameResult(this.board)
     if (result) {
       this.endGame(result)
       return
@@ -157,12 +160,12 @@ export class Game extends Scene {
     if (this.gameOver) return
     if (this.currentTurn !== this.aiMark) return
 
-    const move = this.chooseAIMove()
+    const move = chooseAIMove(this.board, this.aiMark, this.playerMark)
     if (move !== -1) {
       this.placeMark(move, this.aiMark)
     }
 
-    const result = this.getGameResult(this.board)
+    const result = getGameResult(this.board)
     if (result) {
       this.endGame(result)
     }
@@ -220,56 +223,5 @@ export class Game extends Scene {
     )
   }
 
-  private chooseAIMove(): number {
-    const empty = this.getEmptyIndices(this.board)
-    if (empty.length === 0) return -1
-
-    for (const i of empty) {
-      const clone = [...this.board]
-      clone[i] = this.aiMark
-      if (this.getGameResult(clone) === this.aiMark) return i
-    }
-
-    for (const i of empty) {
-      const clone = [...this.board]
-      clone[i] = this.playerMark
-      if (this.getGameResult(clone) === this.playerMark) return i
-    }
-
-    if (this.board[4] === '') return 4
-
-    const corners = [0, 2, 6, 8].filter((i) => this.board[i] === '')
-    if (corners.length > 0)
-      return corners[Math.floor(Math.random() * corners.length)]
-
-    return empty[Math.floor(Math.random() * empty.length)]
-  }
-
-  private getEmptyIndices(board: CellMark[]): number[] {
-    const res: number[] = []
-    for (let i = 0; i < board.length; i += 1) if (board[i] === '') res.push(i)
-    return res
-  }
-
-  private getGameResult(board: CellMark[]): Mark | 'draw' | null {
-    const wins = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ]
-
-    for (const [a, b, c] of wins) {
-      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-        return board[a] as Mark
-      }
-    }
-
-    if (board.every((c) => c !== '')) return 'draw'
-    return null
-  }
+  // Logic helpers moved to ../logic/ticTacToe for testability
 }
