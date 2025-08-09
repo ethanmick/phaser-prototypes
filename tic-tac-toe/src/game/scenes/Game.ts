@@ -222,6 +222,4 @@ export class Game extends Scene {
       yourTurn ? `${role} — Your turn` : `${role} — AI is thinking...`
     )
   }
-
-  // Logic helpers moved to ../logic/ticTacToe for testability
 }
